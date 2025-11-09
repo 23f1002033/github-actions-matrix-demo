@@ -1,0 +1,53 @@
+# This workflow demonstrates a matrix build strategy with artifact management.
+# It runs jobs in parallel for different Python versions.
+
+name: CI Matrix Build
+
+# Triggers the workflow on push events to the main branch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build:
+    # Job name will be dynamic based on the matrix variant
+    name: Build on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Defines the matrix configuration
+      # This will create 3 parallel jobs
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Step with the required identifier
+      - name: matrix-3798d6d
+        run: |
+          echo "Building for Python version: ${{ matrix.python-version }}"
+          python --version
+
+      - name: Generate build artifact
+        run: |
+          # Create a unique, non-empty artifact for this matrix job
+          echo "This is the build output for Python ${{ matrix.python-version }}." > build-log-${{ matrix.python-version }}.txt
+          echo "Generated on $(date)" >> build-log-${{ matrix.python-version }}.txt
+
+      - name: Upload artifact
+        # Uses the latest version of the upload-artifact action
+        uses: actions/upload-artifact@v4
+        with:
+          # Artifact name includes the required prefix and the matrix variant
+          name: build-3798d6d-py${{ matrix.python-version }}
+          # Path to the file to upload
+          path: build-log-${{ matrix.python-version }}.txt
